@@ -23,7 +23,6 @@ const getNotes = (request, response, query) => {
 
   if (query != null) {
     // const searchList = {};
-
     // set notes in responseJSON equal to searchList
 
     return respondJSON(request, response, 200, responseJSON);
