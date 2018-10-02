@@ -1,11 +1,48 @@
 const http = require('http');
 const url = require('url');
-const query = require('query');
+const query = require('querystring');
+const htmlHandler = require('./htmlResponse.js');
+const jsonHandler = require('./jsonResponse.js');
+
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-const onRequest = (request, response) => {
+const urlStruct = {
+  index: htmlHandler.getIndex,
+  '/': htmlHandler.getIndex,
+  '/style.css': htmlHandler.getCSS,
+  '/addNote': jsonHandler.addNote,
+  '/getNotes': jsonHandler.getNotes,
+  notFound: jsonHandler.notFound,
+};
 
+const onRequest = (request, response) => {
+  const parsedURL = url.parse(request.url).pathname;
+  if (request.method === 'POST' && parsedURL === '/addNote') {
+    const res = response;
+
+    const body = [];
+
+    request.on('error', (err) => {
+      console.dir(err);
+      res.statusCode = 400;
+      res.end();
+    });
+
+    request.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    request.on('end', () => {
+      const bodyString = Buffer.concat(body).toString();
+      const bodyParams = query.parse(bodyString);
+      jsonHandler.addNote(request, res, bodyParams);
+    });
+  } else if (urlStruct[parsedURL]) {
+    urlStruct[parsedURL](request, response);
+  } else {
+    urlStruct.notFound(request, response);
+  }
 };
 
 http.createServer(onRequest).listen(port);
