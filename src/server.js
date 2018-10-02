@@ -11,14 +11,14 @@ const urlStruct = {
   index: htmlHandler.getIndex,
   '/': htmlHandler.getIndex,
   '/style.css': htmlHandler.getCSS,
-  '/addNote': jsonHandler.addNote,
-  '/getNotes': jsonHandler.getNotes,
+  '/addTask': jsonHandler.addTask,
+  '/getTasks': jsonHandler.getTasks,
   notFound: jsonHandler.notFound,
 };
 
 const onRequest = (request, response) => {
   const parsedURL = url.parse(request.url).pathname;
-  if (request.method === 'POST' && parsedURL === '/addNote') {
+  if (request.method === 'POST' && parsedURL === '/addTask') {
     const res = response;
 
     const body = [];
@@ -36,7 +36,7 @@ const onRequest = (request, response) => {
     request.on('end', () => {
       const bodyString = Buffer.concat(body).toString();
       const bodyParams = query.parse(bodyString);
-      jsonHandler.addNote(request, res, bodyParams);
+      jsonHandler.addTask(request, res, bodyParams);
     });
   } else if (urlStruct[parsedURL]) {
     urlStruct[parsedURL](request, response);

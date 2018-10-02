@@ -1,4 +1,4 @@
-const noteList = {};
+const taskList = {};
 let idCount = 0;
 
 const respondJSON = (request, response, status, object) => {
@@ -16,9 +16,9 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-const getNotes = (request, response, query) => {
+const getTasks = (request, response, query) => {
   const responseJSON = {
-    noteList,
+    taskList,
   };
 
   if (query != null) {
@@ -31,31 +31,27 @@ const getNotes = (request, response, query) => {
   return respondJSON(request, response, 200, responseJSON);
 };
 
-const addNote = (request, response, body) => {
+const addTask = (request, response, body) => {
   // set the note in here equal to the string
   const responseJSON = {
-    topic: body.topic,
-    note: body.note,
+    task: body.task,
+    desc: body.desc,
   };
 
-  if (!responseJSON.topic) {
-    responseJSON.topic = 'Untitled';
-  }
+  taskList[idCount] = {};
 
-  noteList[idCount] = {};
+  taskList[idCount].id = idCount;
+  taskList[idCount].task = responseJSON.task;
+  taskList[idCount].desc = responseJSON.desc;
 
-  noteList[idCount].id = idCount;
-  noteList[idCount].topic = responseJSON.topic;
-  noteList[idCount].note = responseJSON.note;
-
-  console.log(noteList);
+  console.log(taskList);
 
   idCount++;
 
   return respondJSON(request, response, 201, responseJSON);
 };
 
-const removeNote = (request, response) => respondJSONMeta(request, response, 204);
+const removeTask = (request, response) => respondJSONMeta(request, response, 204);
 
 const notFound = (request, response) => {
   const responseJSON = {
@@ -71,8 +67,8 @@ const notFound = (request, response) => {
 };
 
 module.exports = {
-  getNotes,
-  addNote,
-  removeNote,
+  getTasks,
+  addTask,
+  removeTask,
   notFound,
 };

@@ -8,35 +8,28 @@
   <script type="text/babel">
     const parseJSON = (xhr, content, list) =>{
         const obj = JSON.parse(xhr.response);
-        console.log(obj);
       
-      if((obj.topic || obj.note) && list === false) {
+      if(list === false) {
         const div = document.createElement('div')
         const h = document.createElement('h1')
         const p = document.createElement('p');
-        div.appendChild(h1);
+        div.appendChild(h);
         div.appendChild(p);
-        h.textContent = `${obj.topic}`
-        p.textContent = `${obj.note}`;
+        h.textContent = `${obj.task}`
+        p.textContent = `${obj.desc}`;
         content.appendChild(div);
       }
     
       else{
         let id = 0;
-        console.log(obj[id]);
-        //console.log(obj[id]);
-            //console.log(obj[id].topic);
-            //console.log(obj[id].noteList);
-          //  console.log(obj.noteList[id]);
-        while(obj[id]){
-            
+        while(obj.taskList[id]){
             const div = document.createElement('div')
             const h = document.createElement('h1')
             const p = document.createElement('p');
-            div.appendChild(h1);
+            div.appendChild(h);
             div.appendChild(p);
-            h.textContent = `${obj[id].topic}`
-            p.textContent = `${obj[id].note}`;
+            h.textContent = `${obj.taskList[id].task}`
+            p.textContent = `${obj.taskList[id].desc}`;
             content.appendChild(div);
             id++;
         };
@@ -58,13 +51,13 @@
         const method = form.getAttribute('method');
         if(method === 'POST'){
             const formAction = form.getAttribute('action');
-            const topicField = form.querySelector('#topic');
-            const noteField = form.querySelector('#note');
+            const taskField = form.querySelector('#task');
+            const descField = form.querySelector('#desc');
             xhr.open(method, formAction);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.setRequestHeader('Accept', 'application/json');
             xhr.onload = () => handleResponse(xhr, method);
-            const formData = `topic=${topicField.value}&note=${noteField.value}`;
+            const formData = `task=${taskField.value}&desc=${descField.value}`;
             xhr.send(formData);
             e.preventDefault();
             return false;
@@ -81,22 +74,27 @@
     };
 
     const init = () => {
-        const noteForm = document.querySelector('#noteForm');
-        const addNote = (e) => sendPost(e, noteForm);
-        noteForm.addEventListener('submit', addNote);
-        sendGet('GET','/getNotes');
+        sendGet('GET','/getTasks');
+        const taskForm = document.querySelector('#taskForm');
+        const addTask = (e) => sendPost(e, taskForm);
+        taskForm.addEventListener('submit', addTask);
     };
     window.onload = init;
   </script>
 </head>
 <body>
-    <form method="POST" action="/addNote" id="noteForm">
-        Topic: <input type="text" id="topic" required="true" name="topic" autofocus="true">
+    <form method="POST" action="/addTask" id="taskForm">
+        Task: <input type="text" id="task" required="true" name="task" autofocus="true">
+        <br>
+        Description: 
+        <br>
+        <textarea rows="4" cols="50" id="desc" name="desc" form="taskForm" required="true"></textarea>
+        <br>
         <input type="submit">
     </form>
-    <br>
-    <textarea rows="4" cols="50" id="note" name="note" form="noteForm" required="true"></textarea>
-    <section id="notes">
+
+    
+    <section id="content">
 
     </section>
 </body>

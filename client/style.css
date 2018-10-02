@@ -1,0 +1,9 @@
+div{
+    border: 5px solid black;
+    margin: 5pt;
+    width: 40%;
+}
+
+div h1, div p{
+    word-wrap: break-word;
+}
