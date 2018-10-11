@@ -10,28 +10,39 @@
         const obj = JSON.parse(xhr.response);
       
       if(list === false) {
-        const div = document.createElement('div')
-        const h = document.createElement('h1')
+        const div = document.createElement('div');
+        const h = document.createElement('h1');
         const p = document.createElement('p');
+        div.id = `${obj.id}`;
+        const remove = () => removeTask(div.id, content);
+        div.addEventListener('click',remove);
         div.appendChild(h);
         div.appendChild(p);
-        h.textContent = `${obj.task}`
+        h.textContent = `${obj.task}`;
         p.textContent = `${obj.desc}`;
         content.appendChild(div);
       }
     
       else{
-        let id = 0;
-        while(obj.taskList[id]){
+        let idCounter = 0;
+        console.log(obj.taskList);
+        while(obj.taskList[idCounter]){
+            if(!obj.taskList[idCounter].active){
+                idCounter++;
+                continue;
+            }
             const div = document.createElement('div')
             const h = document.createElement('h1')
             const p = document.createElement('p');
+            div.id = `${obj.taskList[idCounter].id}`;
+            const remove = () => removeTask(div.id, content);
+            div.addEventListener('click',remove);
             div.appendChild(h);
             div.appendChild(p);
-            h.textContent = `${obj.taskList[id].task}`
-            p.textContent = `${obj.taskList[id].desc}`;
+            h.textContent = `${obj.taskList[idCounter].task}`
+            p.textContent = `${obj.taskList[idCounter].desc}`;
             content.appendChild(div);
-            id++;
+            idCounter++;
         };
       }
     };
@@ -41,8 +52,11 @@
         if (method === 'POST'){
             parseJSON(xhr,content,false);
         }
-        else{
+        else if (method === 'GET'){
             parseJSON(xhr, content, true);
+        }
+        else{
+            return false;
         }
     };
 
@@ -73,6 +87,37 @@
         return false;
     };
 
+    const removeTask = (id, content) =>{
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST',"/removeTask");
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.onload = () => handleResponse(xhr, 'HEAD');
+        const data = `id=${id}`;
+        xhr.send(data);
+        const div = document.getElementById(id);
+        content.removeChild(div);
+        return false;
+    };
+/*
+    const sendSearch = (e, form) =>{
+        const xhr = new XMLHttpRequest();
+        let method = form.getAttribute('method');
+        if(method === 'GET'){
+            const formAction = form.getAttribute('action');
+            const typeField = form.querySelector('#searchType');
+            const textField = form.querySelector('#searchText');
+            method = method + "?"
+            xhr.open(method, formAction);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.onload = () => handleResponse(xhr, method);
+            const formData = `type=${typeField.value}&text=${textField.value}`;
+            xhr.send(formData);
+            e.preventDefault();
+            return false;
+        }
+    };
+*/
     const init = () => {
         sendGet('GET','/getTasks');
         const taskForm = document.querySelector('#taskForm');
@@ -88,7 +133,7 @@
         <br>
         Description: 
         <br>
-        <textarea rows="4" cols="50" id="desc" name="desc" form="taskForm" required="true"></textarea>
+        <textarea minlength="5" rows="4" cols="50" id="desc" name="desc" form="taskForm" required="true"></textarea>
         <br>
         <input type="submit">
     </form>

@@ -13,12 +13,14 @@ const urlStruct = {
   '/style.css': htmlHandler.getCSS,
   '/addTask': jsonHandler.addTask,
   '/getTasks': jsonHandler.getTasks,
+  '/removeTask': jsonHandler.removeTask,
   notFound: jsonHandler.notFound,
 };
 
 const onRequest = (request, response) => {
   const parsedURL = url.parse(request.url).pathname;
-  if (request.method === 'POST' && parsedURL === '/addTask') {
+
+  if (request.method === 'POST') {
     const res = response;
 
     const body = [];
@@ -36,7 +38,8 @@ const onRequest = (request, response) => {
     request.on('end', () => {
       const bodyString = Buffer.concat(body).toString();
       const bodyParams = query.parse(bodyString);
-      jsonHandler.addTask(request, res, bodyParams);
+      if (parsedURL === '/addTask') jsonHandler.addTask(request, res, bodyParams);
+      if (parsedURL === '/removeTask') jsonHandler.removeTask(request, res, bodyParams);
     });
   } else if (urlStruct[parsedURL]) {
     urlStruct[parsedURL](request, response);
