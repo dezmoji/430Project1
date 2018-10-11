@@ -16,6 +16,58 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
+const notFound = (request, response) => {
+  const responseJSON = {
+    id: 'notFound',
+    message: 'The page you are looking for was not found.',
+  };
+
+  if (request.method === 'HEAD') {
+    return respondJSONMeta(request, response, 404);
+  }
+
+  return respondJSON(request, response, 404, responseJSON);
+};
+
+const badRequest = (request, response) => {
+  const responseJSON = {
+    id: 'badRequest',
+    message: 'Bad Request my dude',
+  };
+
+  return respondJSON(request, response, 400, responseJSON);
+};
+
+const queryResults = (type, text, active) => {
+  if (type === 'task') {
+    let counter = 0;
+    while (taskList[counter]) {
+      if (taskList[counter].task.includes(text) && taskList[counter].active === active) {
+        taskList[counter].search = true;
+      } else {
+        taskList[counter].search = false;
+      }
+      counter++;
+    }
+
+    return taskList;
+  }
+  if (type === 'desc') {
+    let counter = 0;
+    while (taskList[counter]) {
+      if (taskList[counter].desc.includes(text) && taskList[counter].active === active) {
+        taskList[counter].search = true;
+      } else {
+        taskList[counter].search = false;
+      }
+      counter++;
+    }
+    return taskList;
+  }
+
+  return null;
+};
+
 const getTasks = (request, response, query) => {
   if (request.method === 'HEAD') {
     return respondJSONMeta(request, response, 200);
@@ -25,11 +77,12 @@ const getTasks = (request, response, query) => {
     taskList,
   };
 
-  if (query != null) {
-    // const searchList = {};
-    // set notes in responseJSON equal to searchList
+  if (query.text) {
+    const searchResults = queryResults(query.type, query.text, true);
 
-    return respondJSON(request, response, 200, responseJSON);
+    if (queryResults === null) return badRequest(request, response);
+
+    return respondJSON(request, response, 200, searchResults);
   }
 
   return respondJSON(request, response, 200, responseJSON);
@@ -42,6 +95,7 @@ const addTask = (request, response, body) => {
     task: body.task,
     desc: body.desc,
     active: true,
+    search: false,
   };
 
   taskList[idCount] = {};
@@ -50,6 +104,7 @@ const addTask = (request, response, body) => {
   taskList[idCount].task = responseJSON.task;
   taskList[idCount].desc = responseJSON.desc;
   taskList[idCount].active = responseJSON.active;
+  taskList[idCount].search = responseJSON.search;
 
   idCount++;
 
@@ -58,21 +113,7 @@ const addTask = (request, response, body) => {
 
 const removeTask = (request, response, body) => {
   taskList[body.id].active = false;
-  console.log(taskList);
   return respondJSONMeta(request, response, 204);
-};
-
-const notFound = (request, response) => {
-  if (request.method === 'HEAD') {
-    return respondJSONMeta(request, response, 404);
-  }
-
-  const responseJSON = {
-    id: 'notFound',
-    message: 'The page you are looking for was not found.',
-  };
-
-  return respondJSON(request, response, 404, responseJSON);
 };
 
 module.exports = {

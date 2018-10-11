@@ -6,8 +6,9 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
-    const parseJSON = (xhr, content, list) =>{
+    const parseJSON = (xhr, content, list, search) =>{
         const obj = JSON.parse(xhr.response);
+        if (obj === null) return false;
       
       if(list === false) {
         const div = document.createElement('div');
@@ -22,10 +23,30 @@
         p.textContent = `${obj.desc}`;
         content.appendChild(div);
       }
-    
-      else{
+
+      else if(search === true){
+        content.innerHTML = "";
         let idCounter = 0;
-        console.log(obj.taskList);
+        while(obj[idCounter]){
+            if(!obj[idCounter].search){
+                idCounter += 1;
+                continue;
+            };
+            const div = document.createElement('div')
+            const h = document.createElement('h1')
+            const p = document.createElement('p');
+            div.id = `${obj[idCounter].id}`;
+            div.appendChild(h);
+            div.appendChild(p);
+            h.textContent = `${obj[idCounter].task}`;
+            p.textContent = `${obj[idCounter].desc}`;
+            content.appendChild(div);
+            idCounter++;
+      }
+    }
+    else{
+        content.innerHTML = "";
+        let idCounter = 0;
         while(obj.taskList[idCounter]){
             if(!obj.taskList[idCounter].active){
                 idCounter++;
@@ -39,7 +60,7 @@
             div.addEventListener('click',remove);
             div.appendChild(h);
             div.appendChild(p);
-            h.textContent = `${obj.taskList[idCounter].task}`
+            h.textContent = `${obj.taskList[idCounter].task}`;
             p.textContent = `${obj.taskList[idCounter].desc}`;
             content.appendChild(div);
             idCounter++;
@@ -47,13 +68,13 @@
       }
     };
 
-    const handleResponse = (xhr,method) => {
+    const handleResponse = (xhr,method, search) => {
         const content = document.querySelector('#content');
         if (method === 'POST'){
-            parseJSON(xhr,content,false);
-        }
+            parseJSON(xhr,content,false, search);
+        } 
         else if (method === 'GET'){
-            parseJSON(xhr, content, true);
+            parseJSON(xhr, content, true, search);
         }
         else{
             return false;
@@ -70,9 +91,11 @@
             xhr.open(method, formAction);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.setRequestHeader('Accept', 'application/json');
-            xhr.onload = () => handleResponse(xhr, method);
+            xhr.onload = () => handleResponse(xhr, method, false);
             const formData = `task=${taskField.value}&desc=${descField.value}`;
             xhr.send(formData);
+            taskField.value = "";
+            descField.value = "";
             e.preventDefault();
             return false;
         }
@@ -82,7 +105,7 @@
         const xhr = new XMLHttpRequest();
         xhr.open(method,path)
         xhr.setRequestHeader('Accept', 'application/json');
-        xhr.onload = () => handleResponse(xhr, 'GET');
+        xhr.onload = () => handleResponse(xhr, 'GET', false);
         xhr.send();
         return false;
     };
@@ -91,43 +114,60 @@
         const xhr = new XMLHttpRequest();
         xhr.open('POST',"/removeTask");
         xhr.setRequestHeader('Accept', 'application/json');
-        xhr.onload = () => handleResponse(xhr, 'HEAD');
+        xhr.onload = () => handleResponse(xhr, 'HEAD', false);
         const data = `id=${id}`;
         xhr.send(data);
         const div = document.getElementById(id);
         content.removeChild(div);
         return false;
     };
-/*
+
     const sendSearch = (e, form) =>{
         const xhr = new XMLHttpRequest();
-        let method = form.getAttribute('method');
+        const method = form.getAttribute('method');
         if(method === 'GET'){
-            const formAction = form.getAttribute('action');
+            let formAction = form.getAttribute('action');
             const typeField = form.querySelector('#searchType');
             const textField = form.querySelector('#searchText');
-            method = method + "?"
+            formAction = formAction +  `?type=${typeField.value}&text=${textField.value}`;
             xhr.open(method, formAction);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.setRequestHeader('Accept', 'application/json');
-            xhr.onload = () => handleResponse(xhr, method);
-            const formData = `type=${typeField.value}&text=${textField.value}`;
-            xhr.send(formData);
+            xhr.onload = () => handleResponse(xhr, method, true);
+            xhr.send();
             e.preventDefault();
             return false;
         }
     };
-*/
+
     const init = () => {
+        /*
         sendGet('GET','/getTasks');
         const taskForm = document.querySelector('#taskForm');
         const addTask = (e) => sendPost(e, taskForm);
         taskForm.addEventListener('submit', addTask);
+        */
+        sendGet('GET','/getTasks');
+        const taskForm = document.querySelector('#taskForm');
+        const searchForm = document.querySelector('#searchForm');
+        const getSearch = (e) => sendSearch(e,searchForm);
+        const addTask = (e) => sendPost(e, taskForm);
+        taskForm.addEventListener('submit', addTask);
+        searchForm.addEventListener('submit',getSearch);
     };
     window.onload = init;
   </script>
 </head>
 <body>
+    <form method="GET" action="/getTasks" id="searchForm">
+        Search by:
+        <select id="searchType" name="type">
+            <option value="task">Task</option>
+            <option value="desc">Description</option>
+        </select>
+         <input pattern=".{3,}" type="text" required="false" id="searchText" name="text" autofocus="false">
+         <input type='submit'>
+    </form>
+    <br>
     <form method="POST" action="/addTask" id="taskForm">
         Task: <input type="text" id="task" required="true" name="task" autofocus="true">
         <br>

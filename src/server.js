@@ -18,8 +18,9 @@ const urlStruct = {
 };
 
 const onRequest = (request, response) => {
-  const parsedURL = url.parse(request.url).pathname;
-
+  const URLobj = url.parse(request.url);
+  const parsedURL = URLobj.pathname;
+  const params = query.parse(URLobj.query);
   if (request.method === 'POST') {
     const res = response;
 
@@ -42,7 +43,7 @@ const onRequest = (request, response) => {
       if (parsedURL === '/removeTask') jsonHandler.removeTask(request, res, bodyParams);
     });
   } else if (urlStruct[parsedURL]) {
-    urlStruct[parsedURL](request, response);
+    urlStruct[parsedURL](request, response, params);
   } else {
     urlStruct.notFound(request, response);
   }
