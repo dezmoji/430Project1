@@ -1,9 +1,27 @@
+body{
+    background-color: lightblue;
+}
+
+h1{
+    text-align: center;
+}
+
 div{
-    border: 5px solid black;
+    border: 3px solid black;
     margin: 5pt;
-    width: 40%;
+    width: 30%;
+    background-color: lightgray 
 }
 
 div h1, div p{
+    text-align: left;
     word-wrap: break-word;
+    margin: 1%;
+}
+
+.xButton{
+    float: right;
+    color: red;
+    padding: 5pt;
+    z-index: 2;
 }
