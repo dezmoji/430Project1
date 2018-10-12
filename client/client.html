@@ -7,91 +7,123 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
     const parseJSON = (xhr, content, list, search) =>{
+        // parse the response
         const obj = JSON.parse(xhr.response);
+
+        // return false if the object is null
         if (obj === null) return false;
       
-      if(list === false) {
-        const div = document.createElement('div');
-        const h = document.createElement('h1');
-        const x = document.createElement('h1');
-        const p = document.createElement('p');
-        x.className = "xButton";
-        div.id = `${obj.id}`;
-        const remove = () => removeTask(div.id, content);
-        x.addEventListener('click',remove);
-        div.appendChild(x);
-        div.appendChild(h);
-        div.appendChild(p);
-        x.textContent = 'X';
-        h.textContent = `${obj.task}`;
-        p.textContent = `${obj.desc}`;
-        content.appendChild(div);
-      }
-
-      else if(search === true){
-        content.innerHTML = "";
-        const searchHeader = document.createElement('h1');
-        searchHeader.textContent = "Search Results:"
-        content.appendChild(searchHeader);
-        let idCounter = 0;
-        while(obj[idCounter]){
-            if(!obj[idCounter].search){
-                idCounter += 1;
-                continue;
-            };
-            const div = document.createElement('div')
-            const h = document.createElement('h1')
-            const p = document.createElement('p');
-            div.id = `${obj[idCounter].id}`;
-            div.appendChild(h);
-            div.appendChild(p);
-            h.textContent = `${obj[idCounter].task}`;
-            p.textContent = `${obj[idCounter].desc}`;
-            content.appendChild(div);
-            idCounter++;
-      }
-    }
-    else{
-        content.innerHTML = "";
-        let idCounter = 0;
-        while(obj.taskList[idCounter]){
-            if(!obj.taskList[idCounter].active){
-                idCounter++;
-                continue;
-            }
-            const div = document.createElement('div')
-            const h = document.createElement('h1')
+        // if the obj is not a list
+        if(list === false) {
+            // add the task to the content 
+            // create the elements
+            const div = document.createElement('div');
+            const h = document.createElement('h1');
             const x = document.createElement('h1');
             const p = document.createElement('p');
+
+            // set identfiers
             x.className = "xButton";
-            div.id = `${obj.taskList[idCounter].id}`;
+            div.id = `${obj.id}`;
+
+            // set a click event
             const remove = () => removeTask(div.id, content);
             x.addEventListener('click',remove);
+
+            // append to div
             div.appendChild(x);
             div.appendChild(h);
             div.appendChild(p);
-            h.textContent = `${obj.taskList[idCounter].task}`;
-            p.textContent = `${obj.taskList[idCounter].desc}`;
-            x.textContent = "X";
+
+            // set text content
+            x.textContent = 'X';
+            h.textContent = `${obj.task}`;
+            p.textContent = `${obj.desc}`;
+
+            // append to content
             content.appendChild(div);
-            idCounter++;
-        };
-      }
+        }
+
+        // if the purpose is for a search result
+        else if(search === true){
+            content.innerHTML = "";
+            const searchHeader = document.createElement('h1');
+            searchHeader.textContent = "Search Results:"
+            content.appendChild(searchHeader);
+            let idCounter = 0;
+            // loop through the object
+            while(obj[idCounter]){
+                // check to make sure the current task is a search match
+                if(!obj[idCounter].search){
+                    idCounter += 1;
+                    continue;
+                };
+                const div = document.createElement('div')
+                const h = document.createElement('h1')
+                const p = document.createElement('p');
+                div.id = `${obj[idCounter].id}`;
+                div.appendChild(h);
+                div.appendChild(p);
+                h.textContent = `${obj[idCounter].task}`;
+                p.textContent = `${obj[idCounter].desc}`;
+                content.appendChild(div);
+                idCounter++;
+            }
+        }
+
+        // otherwise, treat the object normally
+        else{
+            content.innerHTML = "";
+            let idCounter = 0;
+            while(obj.taskList[idCounter]){
+                // check to see if the task is active or not
+                if(!obj.taskList[idCounter].active){
+                    idCounter++;
+                    continue;
+                }
+                const div = document.createElement('div')
+                const h = document.createElement('h1')
+                const x = document.createElement('h1');
+                const p = document.createElement('p');
+                x.className = "xButton";
+                div.id = `${obj.taskList[idCounter].id}`;
+                const remove = () => removeTask(div.id, content);
+                x.addEventListener('click',remove);
+                div.appendChild(x);
+                div.appendChild(h);
+                div.appendChild(p);
+                h.textContent = `${obj.taskList[idCounter].task}`;
+                p.textContent = `${obj.taskList[idCounter].desc}`;
+                x.textContent = "X";
+                content.appendChild(div);
+                idCounter++;
+            };
+        }
     };
 
+    // determines what to do with the response
     const handleResponse = (xhr,method, search) => {
+        // grab the content section
         const content = document.querySelector('#content');
+        // if the method is a post
         if (method === 'POST'){
+            // parse the individual repsonse 
             parseJSON(xhr,content,false, search);
         } 
+
+        // if the method is a get
         else if (method === 'GET'){
+            // parse all objects in the response
             parseJSON(xhr, content, true, search);
         }
+
+        // don't do anyhting
         else{
             return false;
         }
     };
 
+    // method to send post request to add a task
     const sendPost = (e,form) =>{ 
         const xhr = new XMLHttpRequest();
         const method = form.getAttribute('method');
@@ -112,6 +144,7 @@
         }
     };
 
+    // method to send get request
     const sendGet = (method,path) =>{
         const xhr = new XMLHttpRequest();
         xhr.open(method,path)
@@ -121,6 +154,7 @@
         return false;
     };
 
+    // method to send post request and remove task
     const removeTask = (id, content) =>{
         const xhr = new XMLHttpRequest();
         xhr.open('POST',"/removeTask");
@@ -133,6 +167,7 @@
         return false;
     };
 
+    // method to send get request for a search
     const sendSearch = (e, form) =>{
         const xhr = new XMLHttpRequest();
         const method = form.getAttribute('method');
@@ -156,15 +191,20 @@
         }
     };
 
+    // checks if the search field is clearn
     const checkClearedSearch = (textField) =>{
-        console.log("hit");
+        // if the field is empty, send a get request
         if(textField.getAttribute('placeholder') && textField.value === ""){
             sendGet('GET','/getTasks');
         };
     };
 
+    // on page init
     const init = () => {
+        // get any tasks that may have already been added
         sendGet('GET','/getTasks');
+
+        // set up submit event listeners
         const taskForm = document.querySelector('#taskForm');
         const searchForm = document.querySelector('#searchForm');
         const getSearch = (e) => sendSearch(e,searchForm);
@@ -172,6 +212,7 @@
         taskForm.addEventListener('submit', addTask);
         searchForm.addEventListener('submit',getSearch);
 
+        // set up change event listeners
         const searchText = document.querySelector('#searchText');
         const checkText = () => checkClearedSearch(searchText);
         searchText.addEventListener('change', checkText);

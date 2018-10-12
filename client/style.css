@@ -9,19 +9,25 @@ h1{
 div{
     border: 3px solid black;
     margin: 5pt;
-    width: 30%;
+    width: 20%;
     background-color: lightgray 
 }
 
 div h1, div p{
     text-align: left;
     word-wrap: break-word;
-    margin: 1%;
+    margin: 5%;
 }
 
 .xButton{
+    border: 1pt dashed black;
     float: right;
     color: red;
-    padding: 5pt;
+    padding: 0pt;
     z-index: 2;
+    font-size: 90%;
+}
+
+.xButton:hover{
+    cursor: pointer;
 }
